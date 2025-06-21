@@ -19,24 +19,31 @@
         100% { opacity: 0; display: none; }
       }
 
-      
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
     </style>
   </head>
-  <body>
-    <div class="container mt-4">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
+  <body class="{% block body_class %}{% endblock %}">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="position-fixed w-100 p-3" style="z-index: 2000;">
           {% for category, msg in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
               {{ msg }}
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
           {% endfor %}
-        {% endif %}
-      {% endwith %}
-      {% block content %}{% endblock %}
-    </div>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
   </body>
 </html>
