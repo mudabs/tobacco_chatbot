@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tobacco Chatbot</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        #chatbox { max-width: 600px; margin-bottom: 10px; }
+        .msg { margin: 5px 0; }
+        .user { color: blue; }
+        .bot { color: green; }
+    </style>
+</head>
+<body>
+    <h2>Tobacco Farmer Chatbot</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="input" placeholder="Type your question here..." />
+    <button onclick="send()">Send</button>
+
+    <script>
+        async function send() {
+            const inputBox = document.getElementById("input");
+            const userMsg = inputBox.value;
+            inputBox.value = "";
+
+            document.getElementById("chatbox").innerHTML += `<p class="msg user"><strong>You:</strong> ${userMsg}</p>`;
+
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMsg, user_id: "user123" })
+            });
+
+            const data = await res.json();
+            document.getElementById("chatbox").innerHTML += `<p class="msg bot"><strong>Bot:</strong> ${data.response}</p>`;
+        }
+    </script>
+</body>
+</html>

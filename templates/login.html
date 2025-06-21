@@ -1,0 +1,18 @@
+<!-- templates/login.html -->
+{% extends "layout.html" %}
+{% block title %}Login | Tobacco Chatbot{% endblock %}
+{% block content %}
+<h2 class="mb-4">Login</h2>
+<form method="POST" action="/login">
+  <div class="mb-3">
+    <label class="form-label">Username</label>
+    <input name="username" type="text" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Password</label>
+    <input name="password" type="password" class="form-control" required>
+  </div>
+  <button type="submit" class="btn btn-success">Login</button>
+</form>
+<p class="mt-3">Don't have an account? <a href="/register">Register here</a></p>
+{% endblock %}
