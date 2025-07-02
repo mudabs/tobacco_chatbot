@@ -14,7 +14,7 @@ def get_or_create_collection(name="tobacco_faq"):
 collection = get_or_create_collection()
 
 def load_dataset():
-    with open("data/tobacco_faq.csv", newline='', encoding='utf-8') as csvfile:
+    with open("data/tobacco_faq.csv", newline='', encoding='cp1252') as csvfile:
         reader = csv.DictReader(csvfile)
         questions = []
         answers = []
