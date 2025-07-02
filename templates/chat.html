@@ -18,7 +18,31 @@
     overflow-y: auto;
     border-right: 1px solid #dee2e6;
     background-color: #f8f9fa;
+    transition: width 0.3s;
     z-index: 2;
+  }
+  .sidebar.collapsed {
+    width: 70px;
+  }
+
+  .sidebar .btn-toggle {
+  width: auto;
+  text-align: center;
+  margin-left: auto; /* Pushes the button to the right */
+  margin-right: 0.5rem; /* Optional spacing from the edge */
+  margin-bottom: 1rem;
+}
+
+  .sidebar .btn-sidebar {
+    width: 100%;
+    text-align: left;
+  }
+  .sidebar.collapsed .btn-text {
+    display: none;
+  }
+  .sidebar .btn-icon {
+    width: 100%;
+    text-align: center;
   }
   .chat-main {
     flex-grow: 1;
@@ -38,54 +62,68 @@
     padding: 1rem;
     z-index: 3;
   }
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 70px !important;
+    }
+    .sidebar .btn-text {
+      display: none;
+    }
+  }
 </style>
 
-  <div class="chat-container">
-
+<div class="chat-container">
   <!-- Sidebar -->
-  <div class="sidebar p-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5>Sessions</h5>
-      
-    </div>
-    <div class="mb-1">
-      <button id="new-chat" class="btn btn-outline-primary mt-3 w-100">New Chat</button>
-<button class="btn btn-outline-secondary mt-3 mb-3 w-100" data-bs-toggle="modal" data-bs-target="#searchModal">Search</button>
-    </div>
+  <div class="sidebar p-2" id="sidebar">
+    <button class="btn btn-outline-secondary mb-3 btn-toggle" id="toggle-sidebar">
+      <i class="bi bi-list"></i>
+    </button>
 
+    <button id="new-chat" class="btn btn-outline-primary mb-2 btn-sidebar">
+      <i class="bi bi-journal-text me-2"></i>
+      <span class="btn-text">New Chat</span>
+    </button>
+
+    <button class="btn btn-outline-secondary mb-3 btn-sidebar" data-bs-toggle="modal" data-bs-target="#searchModal">
+      <i class="bi bi-search me-2"></i>
+      <span class="btn-text">Search</span>
+    </button>
+
+    <strong class="mb-3">Chats</strong>
     <div id="session-list" class="d-flex flex-column gap-1">
-  {% for sid in sessions %}
-  <div class="session-item d-flex align-items-center justify-content-between px-3 py-2 rounded {% if sid == current_session %}bg-primary text-white{% else %}bg-light{% endif %}" 
-       data-session-id="{{ sid }}" 
-       style="cursor: pointer; transition: background-color 0.2s;">
-    
-    <div class="flex-grow-1 me-2 session-link text-truncate" data-url="{{ url_for('chat_ui') }}?session_id={{ sid }}">
-      <div class="text-truncate fw-medium" style="max-width: 100%;">
-        {{ session_titles.get(sid, sid) }}
+      {% for sid in sessions %}
+      <div class="session-item d-flex align-items-center justify-content-between px-3 py-2 rounded {% if sid == current_session %}bg-primary text-white{% else %}bg-light{% endif %}" 
+           data-session-id="{{ sid }}" 
+           style="cursor: pointer; transition: background-color 0.2s;">
+        
+        <div class="flex-grow-1 me-2 session-link text-truncate" data-url="{{ url_for('chat_ui') }}?session_id={{ sid }}">
+          <div class="text-truncate fw-medium" style="max-width: 100%;">
+            {{ session_titles.get(sid, sid) }}
+          </div>
+        </div>
+
+        <div class="dropdown session-options d-none ms-2" style="z-index: 1050;">
+          <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item rename-session" href="#">Rename</a></li>
+            <li><a class="dropdown-item delete-session" href="#">Delete</a></li>
+          </ul>
+        </div>
       </div>
-    </div>
-
-    <div class="dropdown session-options d-none ms-2" style="z-index: 1050;">
-      <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
-        <i class="bi bi-three-dots-vertical"></i>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item rename-session" href="#">Rename</a></li>
-        <li><a class="dropdown-item delete-session" href="#">Delete</a></li>
-      </ul>
+      {% endfor %}
     </div>
   </div>
-  {% endfor %}
-</div>
 
-
-    
-  </div>
 
   <!-- Chat Section -->
   <div class="chat-main">
     <div class="d-flex justify-content-between align-items-center border-bottom p-3">
-      <h5>Hello, {{ username }} 👋</h5>
+      <div class="d-flex align-items-center">
+        
+        <h5 class="mb-0 ms-2">Hello, {{ username }} 👋</h5>
+      </div>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
     </div>
 
@@ -260,5 +298,9 @@
 
   searchInput.addEventListener("input", () => fetchAndRenderSearch(searchInput.value.trim()));
   document.getElementById("searchModal").addEventListener("shown.bs.modal", () => fetchAndRenderSearch());
+
+    document.getElementById("toggle-sidebar").addEventListener("click", () => {
+    document.getElementById("sidebar").classList.toggle("collapsed");
+  });
 </script>
 {% endblock %}
