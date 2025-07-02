@@ -114,32 +114,46 @@ def chat_ui():
         session_timestamps=session_timestamps
     )
 
+import time
+
 @app.route("/chat", methods=["POST"])
 def chat():
+    overall_start = time.time()
+    step = lambda label: print(f"{label}: {time.time() - overall_start:.2f}s")
+
     user_input = request.json.get("message")
     user_id = request.json.get("user_id")
     session_id = request.json.get("session_id")
+    step("Parsed request")
+
     if not all([user_input, user_id, session_id]):
         return jsonify({"error": "Missing data"}), 400
 
     doc = chat_history.find_one({"user_id": user_id, "session_id": session_id})
     if not doc:
-        # Avoid accidental new session creation
         return jsonify({"error": "Invalid session"}), 404
+    step("Fetched session from MongoDB")
 
-    # Update title after first message (if not renamed manually)
     if not doc.get("title") and len(doc.get("history", [])) == 0:
         chat_history.update_one(
             {"user_id": user_id, "session_id": session_id},
             {"$set": {"title": user_input[:40]}}
         )
+        step("Set session title")
 
-    # Context from last 3 exchanges
     recent = doc.get("history", [])[-3:]
     context = "\n".join([f"User: {msg['user_input']}\nBot: {msg['response']}" for msg in recent])
-
+    
     retrieved = query_vector_db(user_input)
+    step("Vector search completed")
+
     prompt = f"""
+You are a helpful assistant for Zimbabwean small-scale tobacco farmers.
+You ONLY answer questions related to tobacco farming or agriculture.
+If the question is not related to tobacco farming, politely explain that you can only assist with tobacco-related topics.
+
+Respond in the same language the user used.
+
 Context:
 {context}
 
@@ -148,19 +162,30 @@ Relevant Info:
 
 User: {user_input}
 Bot:"""
+    step("Prompt constructed")
 
     response = query_ollama(prompt)
+    step("LLM response generated")
 
     chat_history.update_one(
         {"user_id": user_id, "session_id": session_id},
-        {"$push": {"history": {
-            "timestamp": datetime.utcnow(),
-            "user_input": user_input,
-            "response": response
-        }}}
+        {"$push": {
+            "history": {
+                "timestamp": datetime.utcnow(),
+                "user_input": user_input,
+                "response": response
+            }
+        }}
     )
+    step("MongoDB updated with new message")
 
-    return jsonify({"response": response, "session_id": session_id})
+    print(f"✅ Total request time: {time.time() - overall_start:.2f}s")
+
+    return jsonify({
+        "response": response,
+        "session_id": session_id
+    })
+
 
 @app.route("/rename_session", methods=["POST"])
 def rename_session():
@@ -226,4 +251,5 @@ def search_chats():
     return jsonify({"results": results})
 
 if __name__ == "__main__":
+    print(os.getenv("MONGO_URI"))
     app.run(debug=True)

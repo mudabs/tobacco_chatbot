@@ -24,25 +24,18 @@
   .sidebar.collapsed {
     width: 70px;
   }
-
   .sidebar .btn-toggle {
-  width: auto;
-  text-align: center;
-  margin-left: auto; /* Pushes the button to the right */
-  margin-right: 0.5rem; /* Optional spacing from the edge */
-  margin-bottom: 1rem;
-}
-
+    text-align: center;
+    margin-left: auto;
+    margin-right: 0.5rem;
+    margin-bottom: 1rem;
+  }
   .sidebar .btn-sidebar {
     width: 100%;
     text-align: left;
   }
   .sidebar.collapsed .btn-text {
     display: none;
-  }
-  .sidebar .btn-icon {
-    width: 100%;
-    text-align: center;
   }
   .chat-main {
     flex-grow: 1;
@@ -61,6 +54,15 @@
     border-top: 1px solid #dee2e6;
     padding: 1rem;
     z-index: 3;
+  }
+  .typing-indicator {
+    font-style: italic;
+    color: gray;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
   }
   @media (max-width: 768px) {
     .sidebar {
@@ -92,16 +94,11 @@
     <strong class="mb-3">Chats</strong>
     <div id="session-list" class="d-flex flex-column gap-1">
       {% for sid in sessions %}
-      <div class="session-item d-flex align-items-center justify-content-between px-3 py-2 rounded {% if sid == current_session %}bg-primary text-white{% else %}bg-light{% endif %}" 
-           data-session-id="{{ sid }}" 
-           style="cursor: pointer; transition: background-color 0.2s;">
-        
+      <div class="session-item d-flex align-items-center justify-content-between px-3 py-2 rounded {% if sid == current_session %}bg-primary text-white{% else %}bg-light{% endif %}"
+           data-session-id="{{ sid }}" style="cursor: pointer;">
         <div class="flex-grow-1 me-2 session-link text-truncate" data-url="{{ url_for('chat_ui') }}?session_id={{ sid }}">
-          <div class="text-truncate fw-medium" style="max-width: 100%;">
-            {{ session_titles.get(sid, sid) }}
-          </div>
+          <div class="fw-medium text-truncate">{{ session_titles.get(sid, sid) }}</div>
         </div>
-
         <div class="dropdown session-options d-none ms-2" style="z-index: 1050;">
           <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
             <i class="bi bi-three-dots-vertical"></i>
@@ -116,14 +113,10 @@
     </div>
   </div>
 
-
-  <!-- Chat Section -->
+  <!-- Chat Main -->
   <div class="chat-main">
     <div class="d-flex justify-content-between align-items-center border-bottom p-3">
-      <div class="d-flex align-items-center">
-        
-        <h5 class="mb-0 ms-2">Hello, {{ username }} 👋</h5>
-      </div>
+      <div><h5 class="mb-0 ms-2">Hello, {{ username }} 👋</h5></div>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
     </div>
 
@@ -145,51 +138,42 @@
   </div>
 </div>
 
-
-
-<!-- Delete Confirmation Modal -->
+<!-- Modals (delete, rename, search) -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Confirm Delete</h5></div>
-      <div class="modal-body">Are you sure you want to delete this chat session?</div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button id="confirm-delete-btn" type="button" class="btn btn-danger">Delete</button>
-      </div>
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Confirm Delete</h5></div>
+    <div class="modal-body">Are you sure you want to delete this chat session?</div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <button id="confirm-delete-btn" type="button" class="btn btn-danger">Delete</button>
     </div>
-  </div>
+  </div></div>
 </div>
 
-<!-- Rename Modal -->
 <div class="modal fade" id="renameModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Rename Chat</h5></div>
-      <div class="modal-body">
-        <input type="text" id="rename-input" class="form-control" placeholder="Enter new name">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button id="confirm-rename-btn" type="button" class="btn btn-primary">Rename</button>
-      </div>
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Rename Chat</h5></div>
+    <div class="modal-body">
+      <input type="text" id="rename-input" class="form-control" placeholder="Enter new name">
     </div>
-  </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <button id="confirm-rename-btn" type="button" class="btn btn-primary">Rename</button>
+    </div>
+  </div></div>
 </div>
 
-<!-- Search Modal -->
 <div class="modal fade" id="searchModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Search Chats</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="text" id="search-input" class="form-control mb-3" placeholder="Search...">
-        <div id="search-results" class="list-group" style="max-height: 400px; overflow-y: auto;"></div>
-      </div>
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Search Chats</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
-  </div>
+    <div class="modal-body">
+      <input type="text" id="search-input" class="form-control mb-3" placeholder="Search...">
+      <div id="search-results" class="list-group" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  </div></div>
 </div>
 
 <script>
@@ -199,14 +183,37 @@
   const chatForm = document.getElementById("chat-form");
   const messageInput = document.getElementById("message");
 
+  function scrollToBottom() {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function typeText(container, text) {
+    const words = text.split(" ");
+    for (let word of words) {
+      container.innerHTML += word + " ";
+      scrollToBottom();
+      await sleep(80);
+    }
+  }
+
   chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const message = messageInput.value.trim();
     if (!message) return;
 
     chatBox.innerHTML += `<div class='d-flex justify-content-end mb-2'><div class='bg-primary text-white p-2 rounded'>${message}</div></div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
+    scrollToBottom();
     messageInput.value = "";
+
+    const botBubble = document.createElement("div");
+    botBubble.className = "d-flex justify-content-start mb-2";
+    botBubble.innerHTML = `<div class="bg-light text-dark p-2 rounded"><span class="typing-indicator">Typing...</span></div>`;
+    chatBox.appendChild(botBubble);
+    scrollToBottom();
 
     const res = await fetch("/chat", {
       method: "POST",
@@ -216,8 +223,10 @@
 
     const data = await res.json();
     const reply = data.response || "No response.";
-    chatBox.innerHTML += `<div class='d-flex justify-content-start mb-2'><div class='bg-light text-dark p-2 rounded'>${reply}</div></div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
+
+    const bubble = botBubble.querySelector("div");
+    bubble.innerHTML = "";
+    await typeText(bubble, reply);
   });
 
   document.getElementById("new-chat").addEventListener("click", () => {
@@ -240,8 +249,7 @@
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       sessionToDelete = btn.closest(".session-item").dataset.sessionId;
-      const modal = new bootstrap.Modal(document.getElementById("deleteConfirmModal"));
-      modal.show();
+      new bootstrap.Modal(document.getElementById("deleteConfirmModal")).show();
     });
   });
 
@@ -260,8 +268,7 @@
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       sessionToRename = btn.closest(".session-item").dataset.sessionId;
-      const modal = new bootstrap.Modal(document.getElementById("renameModal"));
-      modal.show();
+      new bootstrap.Modal(document.getElementById("renameModal")).show();
     });
   });
 

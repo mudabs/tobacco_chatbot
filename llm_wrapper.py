@@ -1,7 +1,13 @@
-import subprocess
+import requests
 
 def query_ollama(prompt, model="mistral"):
-    command = ['ollama', 'run', model]
-    proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, _ = proc.communicate(input=prompt.encode())
-    return stdout.decode()
+    response = requests.post("http://localhost:11434/api/generate", json={
+        "model": model,
+        "prompt": prompt,
+        "stream": False
+    })
+
+    if response.status_code == 200:
+        return response.json()["response"].strip()
+    else:
+        return "⚠️ Error: LLM failed to respond."
